@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
-const { 
-    connectRedis
- } = require('./connect-redis');
+// const { 
+//     connectRedis
+//  } = require('./connect-redis');
 
 // const { get, set, setnx, incrby, exists } = require('./model.redis');
 // const { order } = require('./service');
@@ -33,6 +33,6 @@ app.get('/order', async (req, res) => {
 });
 
 app.listen(8080, async () => {
-    await connectRedis();
+    // await connectRedis();
     console.log("server is running port 8080");
 });
