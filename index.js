@@ -32,7 +32,7 @@ app.get('/order', async (req, res) => {
     })
 });
 
-app.listen(3000, async () => {
+app.listen(8080, async () => {
     // await connectRedis();
     console.log("server is running port 8080");
 });
