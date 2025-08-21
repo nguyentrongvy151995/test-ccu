@@ -1,9 +1,9 @@
-name: Auto Rebase PRs on Main
+name: Auto Rebase PRs on dev
 
 on:
   push:
     branches:
-      - main   # chỉ khi main có commit mới
+      - dev   # chỉ khi dev có commit mới
 
 permissions:
   contents: write
@@ -29,20 +29,20 @@ jobs:
       - name: Auth
         run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
-      - name: Get all PRs with base=main
+      - name: Get all PRs with base=dev
         run: |
-          prs=$(gh pr list --state open --base main --json headRefName -q '.[].headRefName')
+          prs=$(gh pr list --state open --base dev --json headRefName -q '.[].headRefName')
           echo "PRS<<EOF" >> $GITHUB_ENV
           echo "$prs" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
 
-      - name: Rebase each PR onto main
+      - name: Rebase each PR onto dev
         run: |
           while read -r pr_branch; do
-            echo "👉 Rebasing $pr_branch onto main"
-            git fetch origin $pr_branch main
+            echo "👉 Rebasing $pr_branch onto dev"
+            git fetch origin $pr_branch dev
             git checkout $pr_branch
-            if git rebase origin/main; then
+            if git rebase origin/dev; then
               git push --force-with-lease origin $pr_branch
               echo "✅ $pr_branch rebased successfully"
             else
