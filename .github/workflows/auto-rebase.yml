@@ -3,44 +3,39 @@ name: Auto Rebase PRs onto main
 on:
   push:
     branches:
-      - main    # khi main được update (merge PR hoặc push trực tiếp)
-  pull_request:
-    branches:
-      - main    # khi có PR merge vào main
+      - main   # khi main có commit mới
 
 jobs:
   rebase:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Git
+      - name: Setup Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Install GitHub CLI
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gh jq
+        run: sudo apt-get install -y gh jq
 
-      - name: Authenticate GitHub CLI
+      - name: Auth
         run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
-      - name: Get all open PRs targeting main
+      - name: Get PR branches
         run: |
           prs=$(gh pr list --base main --state open --json headRefName -q '.[].headRefName')
           echo "PRS=$prs" >> $GITHUB_ENV
 
-      - name: Rebase each PR onto main
+      - name: Rebase each PR
         run: |
           for pr_branch in $PRS; do
-            echo "Rebasing $pr_branch onto main"
+            echo "👉 Rebasing $pr_branch onto main"
             git fetch origin $pr_branch
             git checkout $pr_branch
-            git rebase origin/main || git rebase --abort
-            git push --force-with-lease origin $pr_branch || true
+            git rebase origin/main || { echo "❌ Conflict in $pr_branch"; git rebase --abort; continue; }
+            git push --force-with-lease origin $pr_branch
           done
