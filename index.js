@@ -28,6 +28,8 @@ app.get('/order', async (req, res) => {
 
     // day la pr1
 
+    // day la pr2
+
     return res.json({
         status: 200,
         mg: 'ok',
