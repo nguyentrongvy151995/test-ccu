@@ -1,9 +1,13 @@
-name: Auto Rebase PRs onto main
+name: Auto Rebase PRs on Main
 
 on:
   push:
     branches:
-      - main   # khi main có commit mới
+      - main   # chỉ khi main có commit mới
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   rebase:
@@ -25,17 +29,24 @@ jobs:
       - name: Auth
         run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
-      - name: Get PR branches
+      - name: Get all PRs with base=main
         run: |
-          prs=$(gh pr list --base main --state open --json headRefName -q '.[].headRefName')
-          echo "PRS=$prs" >> $GITHUB_ENV
+          prs=$(gh pr list --state open --base main --json headRefName -q '.[].headRefName')
+          echo "PRS<<EOF" >> $GITHUB_ENV
+          echo "$prs" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-      - name: Rebase each PR
+      - name: Rebase each PR onto main
         run: |
-          for pr_branch in $PRS; do
+          while read -r pr_branch; do
             echo "👉 Rebasing $pr_branch onto main"
-            git fetch origin $pr_branch
+            git fetch origin $pr_branch main
             git checkout $pr_branch
-            git rebase origin/main || { echo "❌ Conflict in $pr_branch"; git rebase --abort; continue; }
-            git push --force-with-lease origin $pr_branch
-          done
+            if git rebase origin/main; then
+              git push --force-with-lease origin $pr_branch
+              echo "✅ $pr_branch rebased successfully"
+            else
+              echo "❌ Conflict in $pr_branch (needs manual fix)"
+              git rebase --abort
+            fi
+          done <<< "$PRS"
