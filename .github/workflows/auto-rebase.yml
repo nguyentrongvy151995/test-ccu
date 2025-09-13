@@ -3,7 +3,9 @@ name: Auto Rebase PRs on dev
 on:
   push:
     branches:
-      - dev   # chỉ khi dev có commit mới
+      - '**'     # tất cả branch
+    branches-ignore:
+      - main     # ngoại trừ main
 
 permissions:
   contents: write
