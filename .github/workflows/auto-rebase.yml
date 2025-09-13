@@ -38,7 +38,8 @@ jobs:
 
       - name: Rebase each PR onto dev
         run: |
-          while read -r pr_branch; do
+          prs=$(gh pr list --state open --base dev --json headRefName -q '.[].headRefName')
+          for pr_branch in $prs; do
             echo "👉 Rebasing $pr_branch onto dev"
             git fetch origin $pr_branch dev
             git checkout $pr_branch
@@ -49,4 +50,19 @@ jobs:
               echo "❌ Conflict in $pr_branch (needs manual fix)"
               git rebase --abort
             fi
-          done <<< "$PRS"
+          done
+
+      # - name: Rebase each PR onto dev
+      #   run: |
+      #     while read -r pr_branch; do
+      #       echo "👉 Rebasing $pr_branch onto dev"
+      #       git fetch origin $pr_branch dev
+      #       git checkout $pr_branch
+      #       if git rebase origin/dev; then
+      #         git push --force-with-lease origin $pr_branch
+      #         echo "✅ $pr_branch rebased successfully"
+      #       else
+      #         echo "❌ Conflict in $pr_branch (needs manual fix)"
+      #         git rebase --abort
+      #       fi
+      #     done <<< "$PRS"
