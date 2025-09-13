@@ -49,7 +49,7 @@ app.get('/order', async (req, res) => {
 
     // day la pr11
 
-    // day la pr12
+    // day la pr12 // fix
 
     return res.json({
         status: 200,
