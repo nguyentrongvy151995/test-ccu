@@ -1,0 +1,13 @@
+#!/bin/bash
+branch=$(git rev-parse --abbrev-ref HEAD)
+
+echo "🔄 Auto rebase $branch với origin/$branch trước khi push..."
+git fetch origin $branch
+
+if git rebase origin/$branch; then
+  echo "✅ Rebase xong, tiếp tục push"
+else
+  echo "❌ Rebase lỗi, hủy push"
+  git rebase --abort
+  exit 1
+fi
