@@ -1,13 +1,16 @@
-#!/bin/bash
-branch=$(git rev-parse --abbrev-ref HEAD)
+#!/bin/sh
+branch="$(git rev-parse --abbrev-ref HEAD)"
 
 echo "🔄 Auto rebase $branch với origin/$branch trước khi push..."
-git fetch origin $branch
 
-if git rebase origin/$branch; then
-  echo "✅ Rebase xong, tiếp tục push"
+# Kiểm tra branch đã tồn tại trên remote chưa
+if git ls-remote --exit-code origin "$branch" >/dev/null 2>&1; then
+  if git pull --rebase origin "$branch"; then
+    echo "✅ Rebase thành công"
+  else
+    echo "❌ Rebase lỗi, hủy push"
+    exit 1
+  fi
 else
-  echo "❌ Rebase lỗi, hủy push"
-  git rebase --abort
-  exit 1
+  echo "ℹ️ Branch $branch chưa tồn tại trên remote, skip rebase"
 fi
